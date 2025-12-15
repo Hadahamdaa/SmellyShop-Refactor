@@ -10,6 +10,7 @@ public class ShopService {
 
     public void processPurchase(User user, String productName, int qty) {
         try {
+            // Menggantikan InventoryLegacy.checkStock
             Product product = Product.valueOf(productName.toUpperCase());
             int total = calculateTotal(user, product, qty);
             
@@ -20,26 +21,37 @@ public class ShopService {
             System.out.println("Transaction Success: " + record);
 
         } catch (IllegalArgumentException e) {
-            System.out.println("Item not found! Available items: BOOK, PEN, LAPTOP.");
+            // Pesan error diupdate agar sesuai item baru
+            System.out.println("Item not found! Available: BOOK, LAPTOP, MOUSE, KEYBOARD, GAMING_CHAIR, etc.");
         }
     }
 
     private int calculateTotal(User user, Product product, int qty) {
         int total = product.getPrice() * qty;
 
+        // 1. Bulk Discount Logic
         if (qty > 10) {
             total -= 20;
         }
         
-        if ("ADMIN".equalsIgnoreCase(user.getRole()) || "admin".equalsIgnoreCase(user.getUsername())) {
-            total = 0;
+        // 2. Role Discount Logic (Pengganti DiscountManager.java yang ribet)
+        // Kita sederhanakan ratusan baris DiscountManager menjadi logika bersih ini:
+        String role = user.getRole().toUpperCase();
+        
+        if (role.equals("ADMIN")) {
+            total = 0; // Admin gratis
+        } else if (role.equals("VIP") || role.equals("GOLD")) {
+            total = (int)(total * 0.5); // VIP/Gold diskon 50%
+        } else if (role.equals("SILVER")) {
+            total = (int)(total * 0.9); // Silver diskon 10%
         }
         
         return total;
     }
     
     public void showHistory() {
-        System.out.println("\n--- Transaction History ---");
+        System.out.println("\n--- Transaction History (Clean Log) ---");
+        // Menggantikan ReportGenerator.java
         if (transactionHistory.isEmpty()) {
             System.out.println("No transactions yet.");
         } else {
